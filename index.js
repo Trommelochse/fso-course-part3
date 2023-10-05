@@ -1,7 +1,8 @@
 const express = require('express')
+const cors = require('cors')
 const morgan = require('morgan')
-const app = express()
 
+const app = express()
 let persons = [
   { 
     "id": 1,
@@ -25,13 +26,17 @@ let persons = [
   }
 ]
 
-app.use(express.static('dist'))
+/* Body Parser & CORS */
 app.use(express.json())
-morgan.token('body', (req, res) => JSON.stringify(req.body))
-app.use(morgan(':method :url :status :response-time ms -  :body'))
+app.use(cors())
 
+/* logger */
+morgan.token('body', (req, res) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :response-time ms - :body'))
+
+/* routes */
 app.get('/', (req, res) => {
-  res.send('<p>Hey</p>')
+  res.send('<p>Hey. Use /api/persons to get phone numbers.</p>')
 })
 
 app.get('/api/persons', (req, res) => {
