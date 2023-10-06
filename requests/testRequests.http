@@ -14,4 +14,13 @@ Content-Type: application/json
 GET http://localhost:3001/api/persons/65203de9e5490024a8d3c300
 
 ###
-DELETE http://localhost:3001/api/persons/3
+DELETE http://localhost:3001/api/persons/65203d9ce5490024a8d3c2fe
+
+### 
+PUT http://localhost:3001/api/persons/652051c4087f46eccd5d9b27
+Content-Type: application/json
+
+{
+  "name": "Max Verstappen",
+  "number": "2"
+}

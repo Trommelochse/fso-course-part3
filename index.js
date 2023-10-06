@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
@@ -11,7 +12,7 @@ app.use(express.json())
 app.use(cors())
 
 /* Deliver Frontend */
-app.use(express.static('dist'))
+// app.use(express.static('dist'))
 
 /* Log requests */
 morgan.token('body', (req, res) => JSON.stringify(req.body))
@@ -29,7 +30,7 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const { name, number} = req.body
 
   if (name === undefined || number === undefined) {
@@ -37,29 +38,56 @@ app.post('/api/persons', (req, res) => {
   }
 
   const person = new Person({name, number})
-  person.save().then(newPerson => {
+  person.save()
+    .then(newPerson => {
       res.status(201).send(newPerson)
     })
+    .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       res.json(person)
     })
+    .catch(error => next(error))
 })
 
-/** deleting and info not working */
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(p => p.id !== id)
-  res.status(204).send({})
+app.delete('/api/persons/:id', (req, res, next) => {
+  Person.findByIdAndRemove(req.params.id)
+    .then(() => {
+      res.status(204).send()
+    })
+    .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (req, res, next) => {
+  const person = {...req.body}
+  Person.findByIdAndUpdate(req.params.id, person, {new: true})
+  .then(updatedPerson => {
+    res.status(201).json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.get('/api/info', (req, res) => {
-  res.send(`<p>The phonebook has ${persons.length} entries</p>
-            <p>@${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}</p>`)
+  Person.find({})
+    .then(people => {
+      res.send(`<p>The phonebook has ${people.length} entries</p>
+                <p>@${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}</p>`)
+
+    })
 })
+
+const errorHandler = (error, req, res, next) => {
+  console.log(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

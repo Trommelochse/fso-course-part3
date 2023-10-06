@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-require('dotenv').config()
 
 const mongoPass = process.env.MONGO_PW
 
