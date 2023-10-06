@@ -2,76 +2,54 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 
+const Person = require('./models/person')
+
 const app = express()
-let persons = [
-  { 
-    "id": 1,
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": 2,
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": 3,
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": 4,
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
-]
 
 /* Body Parser & CORS */
 app.use(express.json())
 app.use(cors())
 
-/* Static */
+/* Deliver Frontend */
 app.use(express.static('dist'))
 
-/* logger */
+/* Log requests */
 morgan.token('body', (req, res) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :response-time ms - :body'))
 
-/* routes */
+/* Routes */
 app.get('/', (req, res) => {
   res.send('<p>Hey. Use /api/persons to get phone numbers.</p>')
 })
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person.find({})
+    .then(people => {
+      res.json(people)
+    })
 })
 
 app.post('/api/persons', (req, res) => {
   const { name, number} = req.body
-  const nameExists = !!persons.find(p => p.name === name)
-  if (!name || !number) {
-    return res.status(400).send('Name or number missing.')
+
+  if (name === undefined || number === undefined) {
+    return res.status(400).send('Missing name or number')
   }
-  
-  if (nameExists) {
-    return res.status(400).send('This person already exists.')
-  }
-  const id = Math.floor(Math.random() * (100000000) + 1)
-  person = {name, number, id}
-  persons.push(person)
-  res.status(201).send(person)
+
+  const person = new Person({name, number})
+  person.save().then(newPerson => {
+      res.status(201).send(newPerson)
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(p => p.id === id)
-  if (!person) {
-    return res.sendStatus(404)
-  }
-  res.json(person)
-  return
+  Person.find({id: req.params.id})
+    .then(person => {
+      res.json(person)
+    })
 })
 
+/** deleting and info not working */
 app.delete('/api/persons/:id', (req, res) => {
   const id = Number(req.params.id)
   persons = persons.filter(p => p.id !== id)
@@ -83,7 +61,7 @@ app.get('/api/info', (req, res) => {
             <p>@${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}</p>`)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
