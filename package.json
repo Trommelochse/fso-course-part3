@@ -7,6 +7,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "eslint": "^8.51.0",
     "nodemon": "^3.0.1"
   },
   "name": "fso-course---part3",
@@ -15,7 +16,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
   },
   "author": "Clemens Janes",
   "license": "ISC",

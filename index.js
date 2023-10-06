@@ -12,10 +12,10 @@ app.use(express.json())
 app.use(cors())
 
 /* Deliver Frontend */
-// app.use(express.static('dist'))
+//app.use(express.static('dist'))
 
 /* Log requests */
-morgan.token('body', (req, res) => JSON.stringify(req.body))
+morgan.token('body', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :response-time ms - :body'))
 
 /* Routes */
@@ -31,13 +31,13 @@ app.get('/api/persons', (req, res) => {
 })
 
 app.post('/api/persons', (req, res, next) => {
-  const { name, number} = req.body
+  const { name, number } = req.body
 
   if (name === undefined || number === undefined) {
     return res.status(400).send('Missing name or number')
   }
 
-  const person = new Person({name, number})
+  const person = new Person({ name, number })
   person.save()
     .then(newPerson => {
       res.status(201).send(newPerson)
@@ -62,7 +62,7 @@ app.delete('/api/persons/:id', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-  const person = {...req.body}
+  const person = { ...req.body }
   Person.findByIdAndUpdate(req.params.id, person, {
     new: true,
     runValidators: true,
@@ -70,7 +70,7 @@ app.put('/api/persons/:id', (req, res, next) => {
   })
     .then(updatedPerson => {
       res.status(201).json(updatedPerson)
-      })
+    })
     .catch(error => next(error))
 })
 
@@ -87,7 +87,7 @@ const errorHandler = (error, req, res, next) => {
   console.log(error.message)
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformatted id' })
-  } 
+  }
   else if (error.name === 'ValidationError') {
     res.status(400).send(error.message)
   }
